@@ -1,19 +1,31 @@
-AEDT Airdrop Website
+AEDT PRO AIRDROP SITE
 
-Files:
-- index.html
-- styles.css
-- app.js
+Prefilled contract:
+TPMeavmtF6TRCj9oys9aWZth2zJwDeHvD4
+
+Features:
+- TronLink connect
+- CSV upload + load
+- address validation
+- sequential AEDT send
+- retry failed rows only
+- export success CSV
+- export fail CSV
+- export full status CSV
+- live log + wallet status
 
 How to use:
-1. Open index.html on a simple static host, or upload the folder to GitHub Pages / Netlify.
-2. Open the site in TronLink browser on mobile, or use TronLink extension on desktop.
-3. Paste your AEDT contract address.
-4. Upload CSV with header: address,amount
-5. Validate addresses.
-6. Click Start Airdrop and approve transactions in TronLink.
+1. Upload these files to GitHub Pages / Netlify / any static host.
+2. Mobile par TronLink DApp browser me kholo.
+3. Desktop par Chrome + TronLink extension use karo.
+4. CSV format:
+   address,amount
+5. Load CSV
+6. Validate rows
+7. Start Airdrop
+8. Retry failed if needed
+9. Export reports
 
 Important:
-- TRC20 transfers on TRON need Energy / TRX. This is not zero-fee unless your wallet has enough Energy.
-- Test with 2-3 wallets first.
-- Keep enough AEDT and TRX in the sender wallet.
+- TRC20 transfers need TRX / Energy.
+- Pehle 2-3 test rows par try karo.

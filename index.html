@@ -3,84 +3,127 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AEDT Airdrop Panel</title>
+  <title>AEDT Pro Airdrop Panel</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
 </head>
 <body>
-  <div class="wrap">
-    <header class="hero">
+  <div class="bg glow1"></div>
+  <div class="bg glow2"></div>
+
+  <main class="wrap">
+    <section class="hero card">
       <div>
-        <div class="badge">TRONLINK CONNECTED AIRDROP PANEL</div>
+        <div class="badge">AEDT • PRO AIRDROP PANEL</div>
         <h1>AEDT Batch Airdrop</h1>
         <p class="sub">
-          Upload a CSV, review recipients, connect TronLink, and send AEDT in sequence.
-          TRON still requires Energy / Bandwidth. Keep enough TRX or rented Energy in the sender wallet.
+          Upload CSV, validate recipient addresses, connect TronLink, send AEDT sequentially,
+          retry failed rows, and export success/fail reports.
         </p>
+        <div class="chips">
+          <span class="chip">Token: AEDT</span>
+          <span class="chip">Network: TRON</span>
+          <span class="chip">Decimals: 6</span>
+        </div>
       </div>
-      <button id="connectBtn" class="primary">Connect TronLink</button>
-    </header>
-
-    <section class="card grid2">
-      <div>
-        <label>Token Contract Address</label>
-        <input id="contractAddress" value="PASTE_YOUR_AEDT_CONTRACT_HERE" />
-      </div>
-      <div>
-        <label>Token Decimals</label>
-        <input id="decimals" type="number" value="6" />
-      </div>
-      <div>
-        <label>Delay Between Transfers (ms)</label>
-        <input id="delayMs" type="number" value="2500" />
-      </div>
-      <div>
-        <label>Max Fee Limit Per Transfer (SUN)</label>
-        <input id="feeLimit" type="number" value="100000000" />
+      <div class="hero-actions">
+        <button id="connectBtn" class="primary">Connect TronLink</button>
+        <button id="refreshBtn" class="ghost">Refresh Wallet</button>
       </div>
     </section>
 
-    <section class="card">
-      <div class="row">
-        <div>
-          <label>Upload CSV</label>
-          <input id="csvFile" type="file" accept=".csv" />
-        </div>
-        <div class="hint">
-          CSV format: <code>address,amount</code>
-        </div>
+    <section class="notice card">
+      <strong>Important:</strong> Mobile par is page ko <strong>TronLink DApp browser</strong> me kholo.
+      Desktop par <strong>Chrome + TronLink extension</strong> use karo. Normal browser me send kaam nahi karega.
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Configuration</h2>
+        <label>Token Contract Address</label>
+        <input id="contractAddress" value="TPMeavmtF6TRCj9oys9aWZth2zJwDeHvD4" />
+
+        <label>Token Decimals</label>
+        <input id="decimals" type="number" value="6" />
+
+        <label>Delay Between Transfers (ms)</label>
+        <input id="delayMs" type="number" value="2200" />
+
+        <label>Max Fee Limit Per Transfer (SUN)</label>
+        <input id="feeLimit" type="number" value="100000000" />
+
+        <label>Batch Size</label>
+        <input id="batchSize" type="number" value="100" />
       </div>
 
-      <div class="row topgap">
-        <button id="sampleBtn" class="ghost">Download Sample CSV</button>
-        <button id="validateBtn" class="ghost">Validate Addresses</button>
-        <button id="startBtn" class="primary">Start Airdrop</button>
-        <button id="stopBtn" class="danger">Stop</button>
+      <div class="card">
+        <h2>CSV Input</h2>
+        <label>Upload CSV</label>
+        <input id="csvFile" type="file" accept=".csv" />
+        <div class="hint">CSV format: <code>address,amount</code></div>
+
+        <div class="button-row topgap">
+          <button id="sampleBtn" class="ghost">Download Sample CSV</button>
+          <button id="loadBtn" class="ghost">Load CSV</button>
+          <button id="validateBtn" class="ghost">Validate Rows</button>
+        </div>
+
+        <div class="button-row topgap">
+          <button id="startBtn" class="primary">Start Airdrop</button>
+          <button id="stopBtn" class="danger">Stop</button>
+          <button id="retryFailedBtn" class="ghost">Retry Failed Only</button>
+        </div>
       </div>
     </section>
 
     <section class="stats">
-      <div class="stat">
+      <div class="card stat">
         <div class="k">Wallet</div>
-        <div id="walletText" class="v">Not connected</div>
+        <div class="v" id="walletText">Not connected</div>
       </div>
-      <div class="stat">
+      <div class="card stat">
         <div class="k">Rows</div>
-        <div id="rowsText" class="v">0</div>
+        <div class="v" id="rowsText">0</div>
       </div>
-      <div class="stat">
+      <div class="card stat">
         <div class="k">Total AEDT</div>
-        <div id="totalText" class="v">0</div>
+        <div class="v" id="totalText">0</div>
       </div>
-      <div class="stat">
+      <div class="card stat">
         <div class="k">Status</div>
-        <div id="statusText" class="v">Idle</div>
+        <div class="v" id="statusText">Idle</div>
+      </div>
+    </section>
+
+    <section class="stats small-stats">
+      <div class="card stat">
+        <div class="k">Success</div>
+        <div class="v" id="successText">0</div>
+      </div>
+      <div class="card stat">
+        <div class="k">Failed</div>
+        <div class="v" id="failedText">0</div>
+      </div>
+      <div class="card stat">
+        <div class="k">Validated</div>
+        <div class="v" id="validatedText">0</div>
+      </div>
+      <div class="card stat">
+        <div class="k">Unchecked</div>
+        <div class="v" id="uncheckedText">0</div>
       </div>
     </section>
 
     <section class="card">
-      <h2>Recipients</h2>
-      <div class="tableWrap">
+      <div class="section-head">
+        <h2>Recipients</h2>
+        <div class="button-row">
+          <button id="exportSuccessBtn" class="ghost">Export Success CSV</button>
+          <button id="exportFailBtn" class="ghost">Export Fail CSV</button>
+          <button id="exportAllBtn" class="ghost">Export Full CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
@@ -88,7 +131,9 @@
               <th>Address</th>
               <th>Amount</th>
               <th>Validation</th>
+              <th>Result</th>
               <th>Tx</th>
+              <th>Error</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -97,10 +142,13 @@
     </section>
 
     <section class="card">
-      <h2>Live Log</h2>
+      <div class="section-head">
+        <h2>Live Log</h2>
+        <button id="clearLogBtn" class="ghost">Clear Log</button>
+      </div>
       <pre id="log"></pre>
     </section>
-  </div>
+  </main>
 
   <script src="app.js"></script>
 </body>
