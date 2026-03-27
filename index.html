@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AEDT Pro Airdrop Panel</title>
+  <title>AEDT Airdrop Ultimate</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
 </head>
@@ -12,118 +12,100 @@
   <div class="bg glow2"></div>
 
   <main class="wrap">
-    <section class="hero card">
+    <section class="card hero">
       <div>
-        <div class="badge">AEDT • PRO AIRDROP PANEL</div>
+        <div class="badge">AEDT • ULTIMATE AIRDROP PANEL</div>
         <h1>AEDT Batch Airdrop</h1>
         <p class="sub">
-          Upload CSV, validate recipient addresses, connect TronLink, send AEDT sequentially,
-          retry failed rows, and export success/fail reports.
+          Load CSV, validate rows, connect TronLink, send sequentially, retry failed rows,
+          and export results. Built to avoid the earlier txid and expired-transaction issues.
         </p>
         <div class="chips">
           <span class="chip">Token: AEDT</span>
           <span class="chip">Network: TRON</span>
-          <span class="chip">Decimals: 6</span>
+          <span class="chip">Default Decimals: 6</span>
         </div>
       </div>
-      <div class="hero-actions">
+      <div class="heroActions">
         <button id="connectBtn" class="primary">Connect TronLink</button>
         <button id="refreshBtn" class="ghost">Refresh Wallet</button>
       </div>
     </section>
 
-    <section class="notice card">
-      <strong>Important:</strong> Mobile par is page ko <strong>TronLink DApp browser</strong> me kholo.
-      Desktop par <strong>Chrome + TronLink extension</strong> use karo. Normal browser me send kaam nahi karega.
+    <section class="card notice">
+      <strong>Important:</strong>
+      Mobile par site ko <strong>TronLink DApp browser</strong> me kholo.
+      Desktop par <strong>Chrome + TronLink extension</strong> use karo.
+      Normal browser me send kaam nahi karega.
     </section>
 
     <section class="grid">
-      <div class="card">
+      <section class="card">
         <h2>Configuration</h2>
-        <label>Token Contract Address</label>
-        <input id="contractAddress" value="TPMeavmtF6TRCj9oys9aWZth2zJwDeHvD4" />
+        <label for="contractAddress">Token Contract Address</label>
+        <input id="contractAddress" value="TV714TT9aQftbkYBjWiVExCxNZm9nPJX6K" />
 
-        <label>Token Decimals</label>
+        <label for="decimals">Token Decimals</label>
         <input id="decimals" type="number" value="6" />
 
-        <label>Delay Between Transfers (ms)</label>
-        <input id="delayMs" type="number" value="2200" />
+        <label for="delayMs">Delay Between Transfers (ms)</label>
+        <input id="delayMs" type="number" value="3500" />
 
-        <label>Max Fee Limit Per Transfer (SUN)</label>
-        <input id="feeLimit" type="number" value="100000000" />
+        <label for="feeLimit">Max Fee Limit Per Transfer (SUN)</label>
+        <input id="feeLimit" type="number" value="200000000" />
 
-        <label>Batch Size</label>
-        <input id="batchSize" type="number" value="100" />
-      </div>
+        <label for="batchSize">Batch Size</label>
+        <input id="batchSize" type="number" value="50" />
 
-      <div class="card">
+        <div class="hint">
+          Safe defaults already set. If transactions expire, increase delay and make sure sender wallet has TRX / Energy.
+        </div>
+      </section>
+
+      <section class="card">
         <h2>CSV Input</h2>
-        <label>Upload CSV</label>
+        <label for="csvFile">Upload CSV</label>
         <input id="csvFile" type="file" accept=".csv" />
-        <div class="hint">CSV format: <code>address,amount</code></div>
+        <div class="hint">CSV header must be exactly: <code>address,amount</code></div>
 
-        <div class="button-row topgap">
+        <div class="btnRow">
           <button id="sampleBtn" class="ghost">Download Sample CSV</button>
           <button id="loadBtn" class="ghost">Load CSV</button>
           <button id="validateBtn" class="ghost">Validate Rows</button>
         </div>
 
-        <div class="button-row topgap">
+        <div class="btnRow">
           <button id="startBtn" class="primary">Start Airdrop</button>
           <button id="stopBtn" class="danger">Stop</button>
-          <button id="retryFailedBtn" class="ghost">Retry Failed Only</button>
+          <button id="retryBtn" class="ghost">Retry Failed Only</button>
         </div>
-      </div>
+      </section>
     </section>
 
     <section class="stats">
-      <div class="card stat">
-        <div class="k">Wallet</div>
-        <div class="v" id="walletText">Not connected</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Rows</div>
-        <div class="v" id="rowsText">0</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Total AEDT</div>
-        <div class="v" id="totalText">0</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Status</div>
-        <div class="v" id="statusText">Idle</div>
-      </div>
+      <div class="card stat"><div class="k">Wallet</div><div class="v" id="walletText">Not connected</div></div>
+      <div class="card stat"><div class="k">Rows</div><div class="v" id="rowsText">0</div></div>
+      <div class="card stat"><div class="k">Total AEDT</div><div class="v" id="totalText">0</div></div>
+      <div class="card stat"><div class="k">Status</div><div class="v" id="statusText">Idle</div></div>
     </section>
 
-    <section class="stats small-stats">
-      <div class="card stat">
-        <div class="k">Success</div>
-        <div class="v" id="successText">0</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Failed</div>
-        <div class="v" id="failedText">0</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Validated</div>
-        <div class="v" id="validatedText">0</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Unchecked</div>
-        <div class="v" id="uncheckedText">0</div>
-      </div>
+    <section class="stats small">
+      <div class="card stat"><div class="k">Success</div><div class="v" id="successText">0</div></div>
+      <div class="card stat"><div class="k">Failed</div><div class="v" id="failedText">0</div></div>
+      <div class="card stat"><div class="k">Validated</div><div class="v" id="validatedText">0</div></div>
+      <div class="card stat"><div class="k">Unchecked</div><div class="v" id="uncheckedText">0</div></div>
     </section>
 
     <section class="card">
-      <div class="section-head">
+      <div class="sectionHead">
         <h2>Recipients</h2>
-        <div class="button-row">
+        <div class="btnRow">
           <button id="exportSuccessBtn" class="ghost">Export Success CSV</button>
           <button id="exportFailBtn" class="ghost">Export Fail CSV</button>
           <button id="exportAllBtn" class="ghost">Export Full CSV</button>
         </div>
       </div>
-      <div class="table-wrap">
+      <div class="tableWrap">
         <table>
           <thead>
             <tr>
@@ -142,7 +124,7 @@
     </section>
 
     <section class="card">
-      <div class="section-head">
+      <div class="sectionHead">
         <h2>Live Log</h2>
         <button id="clearLogBtn" class="ghost">Clear Log</button>
       </div>

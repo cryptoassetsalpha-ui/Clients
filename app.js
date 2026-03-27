@@ -1,7 +1,6 @@
 
 let recipients = [];
 let stopRequested = false;
-let isRunning = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -39,12 +38,11 @@ async function connectWallet() {
   try {
     if (window.tronLink && typeof window.tronLink.request === "function") {
       await window.tronLink.request({ method: "tron_requestAccounts" });
-      await sleep(600);
+      await sleep(700);
     }
   } catch (e) {
     log("Wallet popup closed or denied.");
   }
-
   const tronWeb = getReadyTronWeb();
   const addr = tronWeb.defaultAddress?.base58;
   if (!addr) throw new Error("Wallet address not available.");
@@ -121,6 +119,11 @@ function escapeHtml(s) {
     .replaceAll("'", "&#39;");
 }
 
+function safeTxLabel(txid) {
+  if (!txid || typeof txid !== "string") return "-";
+  return txid.slice(0, 14) + (txid.length > 14 ? "..." : "");
+}
+
 function renderTable() {
   const tbody = $("tbody");
   tbody.innerHTML = "";
@@ -138,6 +141,10 @@ function renderTable() {
     if (r.valid === true || r.valid === false) validated += 1;
     if (r.valid === null) unchecked += 1;
 
+    const txCell = (r.txid && typeof r.txid === "string")
+      ? `<a href="https://tronscan.org/#/transaction/${encodeURIComponent(r.txid)}" target="_blank" rel="noreferrer">${safeTxLabel(r.txid)}</a>`
+      : "-";
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${idx + 1}</td>
@@ -145,7 +152,7 @@ function renderTable() {
       <td>${escapeHtml(String(r.amount))}</td>
       <td>${validationHtml(r.valid)}</td>
       <td>${resultHtml(r.result)}</td>
-      <td>${r.txid ? `<a href="https://tronscan.org/#/transaction/${r.txid}" target="_blank" rel="noreferrer">${r.txid.slice(0, 14)}...</a>` : "-"}</td>
+      <td>${txCell}</td>
       <td>${escapeHtml(r.error || "-")}</td>
     `;
     tbody.appendChild(tr);
@@ -160,8 +167,7 @@ function renderTable() {
 }
 
 function setBusy(flag) {
-  isRunning = flag;
-  const ids = ["connectBtn","refreshBtn","sampleBtn","loadBtn","validateBtn","startBtn","retryFailedBtn","csvFile"];
+  const ids = ["connectBtn","refreshBtn","sampleBtn","loadBtn","validateBtn","startBtn","retryBtn","csvFile"];
   ids.forEach(id => {
     const el = $(id);
     if (el) el.disabled = flag;
@@ -182,16 +188,21 @@ async function loadCsvFromInput() {
 async function validateRows() {
   if (!recipients.length) throw new Error("Load CSV first.");
   const tronWeb = await connectWallet();
+
   let invalid = 0;
+  const seen = new Set();
 
   recipients = recipients.map(r => {
-    const ok = tronWeb.isAddress(r.address) && Number(r.amount) > 0;
+    const duplicate = seen.has(r.address);
+    seen.add(r.address);
+    const ok = tronWeb.isAddress(r.address) && Number(r.amount) > 0 && !duplicate;
     if (!ok) invalid += 1;
     return {
       ...r,
       valid: ok,
-      result: ok ? r.result : "failed",
-      error: ok ? r.error : "Invalid address or amount"
+      result: ok ? "pending" : "failed",
+      txid: ok ? "" : "",
+      error: ok ? "" : (duplicate ? "Duplicate address in CSV" : "Invalid address or amount")
     };
   });
 
@@ -205,13 +216,20 @@ async function validateRows() {
   }
 }
 
-async function runRows(rowsToRun, retryOnly = false) {
+function normalizeTxid(result) {
+  if (typeof result === "string") return result;
+  if (result && typeof result.txid === "string") return result.txid;
+  if (result && typeof result.transaction === "object" && typeof result.transaction.txID === "string") return result.transaction.txID;
+  return "";
+}
+
+async function sendRows(rowsToRun, retryOnly = false) {
   const tronWeb = await connectWallet();
   const contractAddress = $("contractAddress").value.trim();
   const decimals = Number($("decimals").value || 6);
-  const delayMs = Number($("delayMs").value || 2200);
-  const feeLimit = Number($("feeLimit").value || 100000000);
-  const batchSize = Math.max(1, Number($("batchSize").value || 100));
+  const delayMs = Math.max(1000, Number($("delayMs").value || 3500));
+  const feeLimit = Number($("feeLimit").value || 200000000);
+  const batchSize = Math.max(1, Number($("batchSize").value || 50));
 
   if (!tronWeb.isAddress(contractAddress)) throw new Error("Invalid token contract address.");
   if (!rowsToRun.length) throw new Error(retryOnly ? "No failed rows to retry." : "No rows to send.");
@@ -235,20 +253,35 @@ async function runRows(rowsToRun, retryOnly = false) {
       const row = rowsToRun[i];
       row.result = "running";
       row.error = "";
+      row.txid = "";
       renderTable();
 
       try {
         const baseAmount = toBaseUnits(row.amount, decimals);
         log(`Sending ${row.amount} AEDT to ${row.address}`);
-        const txid = await contract.transfer(row.address, baseAmount).send({
+
+        const result = await contract.transfer(row.address, baseAmount).send({
           feeLimit: feeLimit,
           callValue: 0,
-          shouldPollResponse: true
+          shouldPollResponse: false
         });
-        row.txid = txid;
-        row.result = "success";
-        row.error = "";
-        log(`Success: ${txid}`);
+
+        const txid = normalizeTxid(result);
+
+        if (txid) {
+          row.txid = txid;
+          row.result = "success";
+          row.error = "";
+          log(`Success: ${txid}`);
+        } else if (result === true) {
+          row.result = "success";
+          row.error = "Confirmed by wallet, txid not returned";
+          log("Success: wallet returned true, txid not available");
+        } else {
+          row.result = "failed";
+          row.error = `Unexpected send result: ${JSON.stringify(result)}`;
+          log(`Failed for ${row.address}: ${row.error}`);
+        }
       } catch (err) {
         row.result = "failed";
         row.error = err?.message || String(err);
@@ -303,7 +336,7 @@ function downloadCsv(filename, rows) {
 
 window.addEventListener("load", async () => {
   $("sampleBtn").addEventListener("click", () => {
-    const sample = "address,amount\nTV3nb5HYFe2xBEmyb3ETe93UGkjAhWyzrs,12.5\nTQeNNo5zVarhdKm5EiJSekfNXg6H1tRN4n,8\n";
+    const sample = "address,amount\nTWEGjUVSEiHSzw4FfUGavjvwCooJrKVvLB,1\nTSmoS1qM1h4SkH3VuaW9g11evY3R3Mdn1f,1\nTGiWkUQi7ViHWrJrcAJ32uaUCB5YWFDWo7,1\n";
     const blob = new Blob([sample], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -353,8 +386,8 @@ window.addEventListener("load", async () => {
     try {
       if (!recipients.length) throw new Error("Load CSV first.");
       if (recipients.some(r => r.valid !== true)) throw new Error("Validate rows first. Invalid or unchecked rows found.");
-      await runRows(recipients.filter(r => r.valid === true), false);
-      alert("Airdrop flow finished. Check log and export CSV if needed.");
+      await sendRows(recipients.filter(r => r.valid === true), false);
+      alert("Airdrop finished. Check log and export CSV if needed.");
     } catch (err) {
       log(err.message);
       setStatus("Start failed");
@@ -362,11 +395,11 @@ window.addEventListener("load", async () => {
     }
   });
 
-  $("retryFailedBtn").addEventListener("click", async () => {
+  $("retryBtn").addEventListener("click", async () => {
     try {
       const failedRows = recipients.filter(r => r.result === "failed" && r.valid === true);
-      await runRows(failedRows, true);
-      alert("Retry flow finished.");
+      await sendRows(failedRows, true);
+      alert("Retry finished.");
     } catch (err) {
       log(err.message);
       setStatus("Retry failed");
@@ -376,25 +409,14 @@ window.addEventListener("load", async () => {
 
   $("stopBtn").addEventListener("click", () => {
     stopRequested = true;
-    log("Stop requested.");
     setStatus("Stopping...");
+    log("Stop requested.");
   });
 
-  $("exportSuccessBtn").addEventListener("click", () => {
-    downloadCsv("success_rows.csv", recipients.filter(r => r.result === "success"));
-  });
-
-  $("exportFailBtn").addEventListener("click", () => {
-    downloadCsv("failed_rows.csv", recipients.filter(r => r.result === "failed"));
-  });
-
-  $("exportAllBtn").addEventListener("click", () => {
-    downloadCsv("all_rows_status.csv", recipients);
-  });
-
-  $("clearLogBtn").addEventListener("click", () => {
-    $("log").textContent = "";
-  });
+  $("exportSuccessBtn").addEventListener("click", () => downloadCsv("success_rows.csv", recipients.filter(r => r.result === "success")));
+  $("exportFailBtn").addEventListener("click", () => downloadCsv("failed_rows.csv", recipients.filter(r => r.result === "failed")));
+  $("exportAllBtn").addEventListener("click", () => downloadCsv("all_rows_status.csv", recipients));
+  $("clearLogBtn").addEventListener("click", () => { $("log").textContent = ""; });
 
   $("stopBtn").disabled = true;
   await refreshWallet();
