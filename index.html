@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEDT Airdrop Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div>
+        <div class="badge">TRONLINK CONNECTED AIRDROP PANEL</div>
+        <h1>AEDT Batch Airdrop</h1>
+        <p class="sub">
+          Upload a CSV, review recipients, connect TronLink, and send AEDT in sequence.
+          TRON still requires Energy / Bandwidth. Keep enough TRX or rented Energy in the sender wallet.
+        </p>
+      </div>
+      <button id="connectBtn" class="primary">Connect TronLink</button>
+    </header>
+
+    <section class="card grid2">
+      <div>
+        <label>Token Contract Address</label>
+        <input id="contractAddress" value="PASTE_YOUR_AEDT_CONTRACT_HERE" />
+      </div>
+      <div>
+        <label>Token Decimals</label>
+        <input id="decimals" type="number" value="6" />
+      </div>
+      <div>
+        <label>Delay Between Transfers (ms)</label>
+        <input id="delayMs" type="number" value="2500" />
+      </div>
+      <div>
+        <label>Max Fee Limit Per Transfer (SUN)</label>
+        <input id="feeLimit" type="number" value="100000000" />
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <label>Upload CSV</label>
+          <input id="csvFile" type="file" accept=".csv" />
+        </div>
+        <div class="hint">
+          CSV format: <code>address,amount</code>
+        </div>
+      </div>
+
+      <div class="row topgap">
+        <button id="sampleBtn" class="ghost">Download Sample CSV</button>
+        <button id="validateBtn" class="ghost">Validate Addresses</button>
+        <button id="startBtn" class="primary">Start Airdrop</button>
+        <button id="stopBtn" class="danger">Stop</button>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="k">Wallet</div>
+        <div id="walletText" class="v">Not connected</div>
+      </div>
+      <div class="stat">
+        <div class="k">Rows</div>
+        <div id="rowsText" class="v">0</div>
+      </div>
+      <div class="stat">
+        <div class="k">Total AEDT</div>
+        <div id="totalText" class="v">0</div>
+      </div>
+      <div class="stat">
+        <div class="k">Status</div>
+        <div id="statusText" class="v">Idle</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Recipients</h2>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Address</th>
+              <th>Amount</th>
+              <th>Validation</th>
+              <th>Tx</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Live Log</h2>
+      <pre id="log"></pre>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

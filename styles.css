@@ -1,0 +1,32 @@
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#08130d;color:#e8fff0}
+.wrap{max-width:1180px;margin:0 auto;padding:28px}
+.hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:20px}
+.badge{display:inline-block;background:#103321;color:#8ef2b5;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.08em}
+h1{margin:12px 0 8px;font-size:42px;line-height:1.05}
+.sub{max-width:760px;color:#b7d6c1;font-size:16px;line-height:1.6}
+.card{background:#0d1c14;border:1px solid #1e3c2b;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+label{display:block;font-size:13px;font-weight:700;color:#9cd7b2;margin-bottom:8px}
+input{width:100%;padding:14px 12px;border-radius:12px;border:1px solid #29543d;background:#08130d;color:#e8fff0}
+button{border:0;border-radius:12px;padding:14px 18px;font-weight:700;cursor:pointer}
+.primary{background:#17c964;color:#072012}
+.ghost{background:#183124;color:#d3ffe3;border:1px solid #2a5d42}
+.danger{background:#40181d;color:#ffd8dd;border:1px solid #7a2a35}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between}
+.topgap{margin-top:14px}
+.hint{color:#a3c4af}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.stat{background:#0d1c14;border:1px solid #1e3c2b;border-radius:18px;padding:16px}
+.k{font-size:12px;color:#8fbca0;text-transform:uppercase;letter-spacing:.08em}
+.v{font-size:18px;font-weight:800;margin-top:6px;word-break:break-all}
+h2{margin:0 0 14px}
+.tableWrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid #1d3729;text-align:left;font-size:14px}
+th{color:#99d7af}
+code,pre{background:#08130d;border-radius:10px}
+pre{padding:16px;min-height:170px;max-height:360px;overflow:auto;color:#baf7ce;white-space:pre-wrap}
+.ok{color:#75f8a6;font-weight:700}
+.bad{color:#ff9aa5;font-weight:700}
+a{color:#8ef2b5}
+@media (max-width:900px){.grid2,.stats{grid-template-columns:1fr}.hero{flex-direction:column}h1{font-size:34px}}
